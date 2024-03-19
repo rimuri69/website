@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Rain Website</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0A0E3F; /* Dark Blue Background Color */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        
+        .terminal {
+            position: relative;
+            width: 400px;
+            height: 300px;
+            background-color: #5B3277; /* Purple Terminal Background Color */
+            border-radius: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center content vertically */
+            align-items: center;
+        }
+
+        .rain-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .rain {
+            position: absolute;
+            width: 4px; /* Adjust the width of the raindrops */
+            height: 25px; /* Adjust the height of the raindrops */
+            background-color: #fff; /* White Rain Color */
+            animation: raindrop 0.5s linear infinite;
+        }
+
+        @keyframes raindrop {
+            0% {
+                transform: translateY(-25px); /* Start from above the screen */
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal" id="terminal">
+        <!-- Content of the terminal goes here -->
+        Welcome to the Terminal
+    </div>
+
+    <div class="rain-container" id="rain-container"></div>
+
+    <script>
+        // Calculate number of raindrops based on screen height
+        var screenHeight = window.innerHeight;
+        var numRaindrops = Math.floor(screenHeight / 15); // Adjust 15 for density
+        
+        // Create raindrops
+        var rainContainer = document.getElementById("rain-container");
+        for (var i = 0; i < numRaindrops; i++) {
+            var raindrop = document.createElement("div");
+            raindrop.className = "rain";
+            raindrop.style.left = Math.random() * 100 + "%"; // Random horizontal position
+            raindrop.style.animationDelay = Math.random() * 2 + "s"; // Random animation delay
+            rainContainer.appendChild(raindrop);
+        }
+    </script>
+</body>
+</html>
