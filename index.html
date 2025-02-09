@@ -3,59 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- SEO Title -->
-    <title>Weed Recipes & Edible THC Calculator | Weed.Baby</title>
-
-    <!-- Meta Description -->
-    <meta name="description" content="Find the best weed edible recipes & calculate THC dosage per serving with our simple calculator. Get high the right way! 🍪🌿">
-
-    <!-- Keywords (Less important for modern SEO but still good) -->
-    <meta name="keywords" content="weed edibles, cannabis recipes, THC calculator, weed brownies, cannabis cookies, how to make edibles, weed lemonade, edible dosages">
-
-    <!-- Open Graph (Facebook & Social Sharing) -->
-    <meta property="og:title" content="Weed Recipes & Edible THC Calculator | Weed.Baby">
-    <meta property="og:description" content="Find the best weed edible recipes & calculate THC dosage per serving. Get high the right way!">
-    <meta property="og:image" content="https://weed.baby/preview-image.jpg">
-    <meta property="og:url" content="https://weed.baby">
-    <meta property="og:type" content="website">
-
-    <!-- Twitter Card (for better social sharing) -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Weed Recipes & Edible THC Calculator | Weed.Baby">
-    <meta name="twitter:description" content="Find the best weed edible recipes & calculate THC dosage per serving. Get high the right way!">
-    <meta name="twitter:image" content="https://weed.baby/preview-image.jpg">
-
-    <!-- Canonical URL (Prevents duplicate content issues) -->
-    <link rel="canonical" href="https://weed.baby">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="https://weed.baby/favicon.png">
-
-    <!-- Schema Markup (Better Google Understanding) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Recipe",
-      "name": "Weed Edibles",
-      "author": {
-        "@type": "Person",
-        "name": "Weed.Baby"
-      },
-      "description": "Find the best weed edible recipes and calculate THC per serving with our edible calculator.",
-      "url": "https://weed.baby",
-      "image": "https://weed.baby/preview-image.jpg",
-      "recipeIngredient": ["Cannabutter", "Cannabis", "THC Extract", "Flour", "Sugar", "Chocolate Chips"],
-      "recipeInstructions": [
-        "Preheat the oven",
-        "Mix the ingredients",
-        "Bake until golden brown",
-        "Let it cool and enjoy"
-      ]
-    }
-    </script>
-
-    <!-- CSS for Better UX -->
+    <meta name="description" content="Find the best weed-infused edible recipes with precise THC dosage calculations. Easy, homemade cannabis recipes for brownies, cookies, and more!">
+    <meta name="keywords" content="weed edibles, cannabis recipes, THC edibles, homemade weed brownies, infused cookies">
+    <meta name="author" content="Weed.Baby">
+    <title>Weed Baby | Edible THC Recipe Calculator</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f8f8f8; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
@@ -64,33 +15,33 @@
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 90%; max-height: 90%; overflow-y: auto; }
         .modal.active { display: block; }
         .close { cursor: pointer; color: red; font-size: 18px; float: right; }
-        .salty-symbol { color: #ff9800; font-weight: bold; }
+        #searchBar { width: 100%; padding: 10px; margin-bottom: 10px; }
+        #toggleSalty { margin-bottom: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Weed Recipes & THC Calculator 🍪🌿</h1>
-
+        <h1>Weed Baby: Edible THC Recipe Calculator</h1>
+        
         <label for="weedAmount">How much cannabis do you have? (grams)</label>
         <input type="number" id="weedAmount" min="0" step="0.1" onchange="calculateRecipes()">
-
+        
         <label for="thcLevel">Select THC potency:</label>
         <select id="thcLevel" onchange="calculateRecipes()">
             <option value="15">Mid-Shelf (15% THC)</option>
             <option value="20">Top-Shelf (20% THC)</option>
             <option value="25">Exotic (25% THC)</option>
         </select>
-
-        <label for="saltyFilter">
-            <input type="checkbox" id="saltyFilter" onchange="calculateRecipes()"> Show Only Salty Recipes
+        
+        <input type="text" id="searchBar" placeholder="Search recipes..." oninput="filterRecipes()">
+        <label>
+            <input type="checkbox" id="toggleSalty" onchange="calculateRecipes()"> Show Salty Recipes
         </label>
-
-        <input type="text" id="search" placeholder="Search recipes..." oninput="calculateRecipes()">
 
         <h2>Available Recipes:</h2>
         <div id="recipes"></div>
     </div>
-
+    
     <div id="recipeModal" class="modal">
         <span class="close" onclick="closeModal()">&times;</span>
         <h2 id="modalTitle"></h2>
@@ -100,40 +51,41 @@
     <script>
         let recipes = [];
 
-        async function loadRecipes() {
-            try {
-                const response = await fetch("recipes.json");
-                recipes = await response.json();
-                calculateRecipes();
-            } catch (error) {
-                console.error("Error loading recipes:", error);
-            }
+        function fetchRecipes() {
+            fetch("recipes.json") // GitHub Pages fetch fix
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json();
+                })
+                .then(data => {
+                    recipes = data;
+                    calculateRecipes();
+                })
+                .catch(error => {
+                    console.error("Error loading recipes:", error);
+                    document.getElementById("recipes").innerHTML = "<p style='color: red;'>Failed to load recipes.</p>";
+                });
         }
 
         function calculateRecipes() {
             const weedAmount = parseFloat(document.getElementById("weedAmount").value) || 0;
             const thcLevel = parseFloat(document.getElementById("thcLevel").value) / 100;
-            const saltyFilter = document.getElementById("saltyFilter").checked;
-            const searchQuery = document.getElementById("search").value.toLowerCase();
+            const showSalty = document.getElementById("toggleSalty").checked;
             const recipesContainer = document.getElementById("recipes");
-
             recipesContainer.innerHTML = "";
 
             recipes.forEach(recipe => {
+                if (!showSalty && recipe.salty) return;
                 if (weedAmount >= recipe.weedPerBatch) {
                     const totalTHC = weedAmount * thcLevel * 1000;
-                    const thcPerPiece = totalTHC / recipe.servings;
-                    
-                    if (saltyFilter && !recipe.salty) return;
-                    if (!recipe.name.toLowerCase().includes(searchQuery)) return;
-
-                    const saltySymbol = recipe.salty ? "🌶️" : "";
+                    const thcPerServing = totalTHC / recipe.servings;
+                    const saltySymbol = recipe.salty ? " 🧂" : "";
                     const recipeHTML = `
                         <div class="recipe" onclick='showRecipe(${JSON.stringify(recipe)})'>
                             <h3>${recipe.name} ${saltySymbol}</h3>
                             <p>Weed Needed: ${recipe.weedPerBatch}g</p>
-                            <p>THC per piece: ${thcPerPiece.toFixed(2)}mg</p>
-                            <p>Total THC in batch: ${totalTHC.toFixed(2)}mg</p>
+                            <p>THC per Serving: ${thcPerServing.toFixed(2)}mg</p>
+                            <p>Total THC in Batch: ${totalTHC.toFixed(2)}mg</p>
                         </div>
                     `;
                     recipesContainer.innerHTML += recipeHTML;
@@ -143,12 +95,7 @@
 
         function showRecipe(recipe) {
             document.getElementById("modalTitle").innerText = recipe.name;
-            document.getElementById("modalContent").innerHTML = `
-                <h3>Ingredients:</h3>
-                <ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
-                <h3>Steps:</h3>
-                <ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>
-            `;
+            document.getElementById("modalContent").innerHTML = `<h3>Ingredients:</h3><ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul><h3>Steps:</h3><ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
             document.getElementById("recipeModal").classList.add("active");
         }
 
@@ -156,7 +103,14 @@
             document.getElementById("recipeModal").classList.remove("active");
         }
 
-        loadRecipes();
+        function filterRecipes() {
+            const searchQuery = document.getElementById("searchBar").value.toLowerCase();
+            document.querySelectorAll(".recipe").forEach(recipe => {
+                recipe.style.display = recipe.innerText.toLowerCase().includes(searchQuery) ? "block" : "none";
+            });
+        }
+
+        fetchRecipes();
     </script>
 </body>
 </html>
