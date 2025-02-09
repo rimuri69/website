@@ -3,7 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>High Bites - Edible Calculator</title>
+    
+    <!-- SEO Title -->
+    <title>Weed Recipes & Edible THC Calculator | Weed.Baby</title>
+
+    <!-- Meta Description -->
+    <meta name="description" content="Find the best weed edible recipes & calculate THC dosage per serving with our simple calculator. Get high the right way! 🍪🌿">
+
+    <!-- Keywords (Less important for modern SEO but still good) -->
+    <meta name="keywords" content="weed edibles, cannabis recipes, THC calculator, weed brownies, cannabis cookies, how to make edibles, weed lemonade, edible dosages">
+
+    <!-- Open Graph (Facebook & Social Sharing) -->
+    <meta property="og:title" content="Weed Recipes & Edible THC Calculator | Weed.Baby">
+    <meta property="og:description" content="Find the best weed edible recipes & calculate THC dosage per serving. Get high the right way!">
+    <meta property="og:image" content="https://weed.baby/preview-image.jpg">
+    <meta property="og:url" content="https://weed.baby">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card (for better social sharing) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Weed Recipes & Edible THC Calculator | Weed.Baby">
+    <meta name="twitter:description" content="Find the best weed edible recipes & calculate THC dosage per serving. Get high the right way!">
+    <meta name="twitter:image" content="https://weed.baby/preview-image.jpg">
+
+    <!-- Canonical URL (Prevents duplicate content issues) -->
+    <link rel="canonical" href="https://weed.baby">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://weed.baby/favicon.png">
+
+    <!-- Schema Markup (Better Google Understanding) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Recipe",
+      "name": "Weed Edibles",
+      "author": {
+        "@type": "Person",
+        "name": "Weed.Baby"
+      },
+      "description": "Find the best weed edible recipes and calculate THC per serving with our edible calculator.",
+      "url": "https://weed.baby",
+      "image": "https://weed.baby/preview-image.jpg",
+      "recipeIngredient": ["Cannabutter", "Cannabis", "THC Extract", "Flour", "Sugar", "Chocolate Chips"],
+      "recipeInstructions": [
+        "Preheat the oven",
+        "Mix the ingredients",
+        "Bake until golden brown",
+        "Let it cool and enjoy"
+      ]
+    }
+    </script>
+
+    <!-- CSS for Better UX -->
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f8f8f8; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
@@ -17,7 +69,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>High Bites - Edible Calculator</h1>
+        <h1>Weed Recipes & THC Calculator 🍪🌿</h1>
 
         <label for="weedAmount">How much cannabis do you have? (grams)</label>
         <input type="number" id="weedAmount" min="0" step="0.1" onchange="calculateRecipes()">
@@ -72,10 +124,7 @@
                     const totalTHC = weedAmount * thcLevel * 1000;
                     const thcPerPiece = totalTHC / recipe.servings;
                     
-                    // Filter based on salty checkbox
                     if (saltyFilter && !recipe.salty) return;
-
-                    // Filter based on search
                     if (!recipe.name.toLowerCase().includes(searchQuery)) return;
 
                     const saltySymbol = recipe.salty ? "🌶️" : "";
@@ -107,7 +156,6 @@
             document.getElementById("recipeModal").classList.remove("active");
         }
 
-        // Load recipes on page load
         loadRecipes();
     </script>
 </body>
