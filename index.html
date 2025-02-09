@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edible Recipe Calculator</title>
+    <title>High Bites - Edible Calculator</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f8f8f8; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
@@ -12,181 +12,103 @@
         .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); max-width: 90%; max-height: 90%; overflow-y: auto; }
         .modal.active { display: block; }
         .close { cursor: pointer; color: red; font-size: 18px; float: right; }
-        input[type="text"], input[type="file"] { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; }
-        label { font-size: 16px; font-weight: bold; }
+        .salty-symbol { color: #ff9800; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Edible Recipe Calculator</h1>
-        
-        <!-- File input to load recipes -->
-        <label for="recipeFile">Upload a Recipe File (JSON format):</label>
-        <input type="file" id="recipeFile" onchange="loadRecipesFromFile(event)">
-        
-        <label for="search">Search Recipes:</label>
-        <input type="text" id="search" placeholder="Search by recipe name" oninput="searchRecipes()">
-        
-        <!-- Checkbox to toggle salty recipes -->
-        <label for="saltyToggle">
-            <input type="checkbox" id="saltyToggle" onchange="filterSaltyRecipes()"> Show salty recipes
-        </label>
-        
+        <h1>High Bites - Edible Calculator</h1>
+
         <label for="weedAmount">How much cannabis do you have? (grams)</label>
         <input type="number" id="weedAmount" min="0" step="0.1" onchange="calculateRecipes()">
-        
+
         <label for="thcLevel">Select THC potency:</label>
         <select id="thcLevel" onchange="calculateRecipes()">
             <option value="15">Mid-Shelf (15% THC)</option>
             <option value="20">Top-Shelf (20% THC)</option>
             <option value="25">Exotic (25% THC)</option>
         </select>
-        
+
+        <label for="saltyFilter">
+            <input type="checkbox" id="saltyFilter" onchange="calculateRecipes()"> Show Only Salty Recipes
+        </label>
+
+        <input type="text" id="search" placeholder="Search recipes..." oninput="calculateRecipes()">
+
         <h2>Available Recipes:</h2>
         <div id="recipes"></div>
     </div>
-    
-    <!-- Modal for Recipe Details -->
+
     <div id="recipeModal" class="modal">
         <span class="close" onclick="closeModal()">&times;</span>
         <h2 id="modalTitle"></h2>
         <div id="modalContent"></div>
     </div>
-    
-    <script>
-        let recipes = [];  // Global variable to store recipes
-        let showSaltyRecipes = false; // Flag for salty recipe filter
 
-        // Function to read and load recipes from a file
-        function loadRecipesFromFile(event) {
-            const file = event.target.files[0];
-            if (file && file.name.endsWith('.json')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const fileContent = e.target.result;
-                    try {
-                        recipes = JSON.parse(fileContent);
-                        console.log("Recipes loaded:", recipes);
-                        calculateRecipes();  // Recalculate available recipes based on the loaded data
-                    } catch (error) {
-                        alert("Error parsing the file. Please make sure it's in valid JSON format.");
-                    }
-                };
-                reader.readAsText(file);
-            } else {
-                alert("Please upload a valid JSON file.");
+    <script>
+        let recipes = [];
+
+        async function loadRecipes() {
+            try {
+                const response = await fetch("recipes.json");
+                recipes = await response.json();
+                calculateRecipes();
+            } catch (error) {
+                console.error("Error loading recipes:", error);
             }
         }
-        
-        // Function to toggle the display of salty recipes
-        function filterSaltyRecipes() {
-            showSaltyRecipes = document.getElementById("saltyToggle").checked;
-            calculateRecipes();
-        }
-        
-        // Function to calculate which recipes to show based on weed amount, THC, and salty filter
+
         function calculateRecipes() {
             const weedAmount = parseFloat(document.getElementById("weedAmount").value) || 0;
             const thcLevel = parseFloat(document.getElementById("thcLevel").value) / 100;
+            const saltyFilter = document.getElementById("saltyFilter").checked;
+            const searchQuery = document.getElementById("search").value.toLowerCase();
             const recipesContainer = document.getElementById("recipes");
+
             recipesContainer.innerHTML = "";
 
             recipes.forEach(recipe => {
-                // Check if recipe should be displayed based on salty filter
-                if (showSaltyRecipes || !recipe.salty) {
-                    if (weedAmount >= recipe.weedPerBatch) {
-                        const totalTHC = weedAmount * thcLevel * 1000;
-                        const thcPerPiece = totalTHC / recipe.servings;
-                        const saltySymbol = recipe.salty ? " 🧂" : "";  // Add salt symbol for salty recipes
+                if (weedAmount >= recipe.weedPerBatch) {
+                    const totalTHC = weedAmount * thcLevel * 1000;
+                    const thcPerPiece = totalTHC / recipe.servings;
+                    
+                    // Filter based on salty checkbox
+                    if (saltyFilter && !recipe.salty) return;
 
-                        // Calculate the expected effect based on THC per edible piece
-                        let effect = "Microdose (1-3 mg): Pain relief without cognition impairment";
-                        if (thcPerPiece >= 3 && thcPerPiece < 7.5) {
-                            effect = "Low (3-7.4 mg): Mild intoxication, helps with sleep, pain relief";
-                        } else if (thcPerPiece >= 7.5 && thcPerPiece < 16) {
-                            effect = "Moderate (7.5-16 mg): Ideal for experienced users, fun, pain management";
-                        } else if (thcPerPiece >= 17 && thcPerPiece < 43) {
-                            effect = "High (17-43 mg): Strong euphoria, impaired coordination, recommended for experienced users";
-                        } else if (thcPerPiece >= 44 && thcPerPiece < 100) {
-                            effect = "Acute (44-100 mg): Intense effects, not recommended for mental health conditions";
-                        } else if (thcPerPiece >= 100) {
-                            effect = "Macrodose (100-500 mg): Intense and potentially overwhelming, use with caution";
-                        }
+                    // Filter based on search
+                    if (!recipe.name.toLowerCase().includes(searchQuery)) return;
 
-                        const recipeHTML = `
-                            <div class="recipe" onclick='showRecipe(${JSON.stringify(recipe)})'>
-                                <h3>${recipe.name}${saltySymbol}</h3>
-                                <p>Weed Needed: ${recipe.weedPerBatch}g</p>
-                                <p>THC per piece: ${thcPerPiece.toFixed(2)}mg</p>
-                                <p>Effect: ${effect}</p>
-                                <p>Total THC in batch: ${totalTHC.toFixed(2)}mg</p>
-                            </div>
-                        `;
-                        recipesContainer.innerHTML += recipeHTML;
-                    }
+                    const saltySymbol = recipe.salty ? "🌶️" : "";
+                    const recipeHTML = `
+                        <div class="recipe" onclick='showRecipe(${JSON.stringify(recipe)})'>
+                            <h3>${recipe.name} ${saltySymbol}</h3>
+                            <p>Weed Needed: ${recipe.weedPerBatch}g</p>
+                            <p>THC per piece: ${thcPerPiece.toFixed(2)}mg</p>
+                            <p>Total THC in batch: ${totalTHC.toFixed(2)}mg</p>
+                        </div>
+                    `;
+                    recipesContainer.innerHTML += recipeHTML;
                 }
             });
         }
-        
-        // Function to show recipe details in a modal
+
         function showRecipe(recipe) {
             document.getElementById("modalTitle").innerText = recipe.name;
-            document.getElementById("modalContent").innerHTML = `<h3>Ingredients:</h3><ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul><h3>Steps:</h3><ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>`;
+            document.getElementById("modalContent").innerHTML = `
+                <h3>Ingredients:</h3>
+                <ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+                <h3>Steps:</h3>
+                <ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+            `;
             document.getElementById("recipeModal").classList.add("active");
         }
-        
-        // Function to close the modal
+
         function closeModal() {
             document.getElementById("recipeModal").classList.remove("active");
         }
 
-        // Function to search recipes by name
-        function searchRecipes() {
-            const searchQuery = document.getElementById("search").value.toLowerCase();
-            const filteredRecipes = recipes.filter(recipe => recipe.name.toLowerCase().includes(searchQuery));
-
-            const recipesContainer = document.getElementById("recipes");
-            recipesContainer.innerHTML = "";
-
-            filteredRecipes.forEach(recipe => {
-                const weedAmount = parseFloat(document.getElementById("weedAmount").value) || 0;
-                const thcLevel = parseFloat(document.getElementById("thcLevel").value) / 100;
-
-                // Check if recipe should be displayed based on salty filter
-                if (showSaltyRecipes || !recipe.salty) {
-                    if (weedAmount >= recipe.weedPerBatch) {
-                        const totalTHC = weedAmount * thcLevel * 1000;
-                        const thcPerPiece = totalTHC / recipe.servings;
-                        const saltySymbol = recipe.salty ? " 🧂" : "";  // Add salt symbol for salty recipes
-
-                        // Calculate the expected effect based on THC per edible piece
-                        let effect = "Microdose (1-3 mg): Pain relief without cognition impairment";
-                        if (thcPerPiece >= 3 && thcPerPiece < 7.5) {
-                            effect = "Low (3-7.4 mg): Mild intoxication, helps with sleep, pain relief";
-                        } else if (thcPerPiece >= 7.5 && thcPerPiece < 16) {
-                            effect = "Moderate (7.5-16 mg): Ideal for experienced users, fun, pain management";
-                        } else if (thcPerPiece >= 17 && thcPerPiece < 43) {
-                            effect = "High (17-43 mg): Strong euphoria, impaired coordination, recommended for experienced users";
-                        } else if (thcPerPiece >= 44 && thcPerPiece < 100) {
-                            effect = "Acute (44-100 mg): Intense effects, not recommended for mental health conditions";
-                        } else if (thcPerPiece >= 100) {
-                            effect = "Macrodose (100-500 mg): Intense and potentially overwhelming, use with caution";
-                        }
-
-                        const recipeHTML = `
-                            <div class="recipe" onclick='showRecipe(${JSON.stringify(recipe)})'>
-                                <h3>${recipe.name}${saltySymbol}</h3>
-                                <p>Weed Needed: ${recipe.weedPerBatch}g</p>
-                                <p>THC per piece: ${thcPerPiece.toFixed(2)}mg</p>
-                                <p>Effect: ${effect}</p>
-                                <p>Total THC in batch: ${totalTHC.toFixed(2)}mg</p>
-                            </div>
-                        `;
-                        recipesContainer.innerHTML += recipeHTML;
-                    }
-                }
-            });
-        }
+        // Load recipes on page load
+        loadRecipes();
     </script>
 </body>
 </html>
